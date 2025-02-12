@@ -106,7 +106,6 @@ export default function Employee() {
             <Route path="/dashboard" element={<Dashbord />} />
             {permission.includes("viewbanner") ? <Route path="/banner" element={<Banner />} /> : ""}
 
-
             {permission.includes("vewbasket") ? <Route path="/basket" element={<Basket />} /> : ""}
             {permission.includes("addbasket") ? <Route path="/addbasket" element={<AddBasket />} /> : ""}
             {permission.includes("basketdetail") ? <Route path="/viewdetail/:id" element={<Viewbasketdetail />} /> : ""}
@@ -116,7 +115,6 @@ export default function Employee() {
             {permission.includes("allbaskethistory") ? <Route path="/purchasebaskethistory" element={<AllBasketHistory />} /> : ""}
             {permission.includes("addstock") ? <Route path="/addstock/:id" element={<AddStock />} /> : ""}
             {permission.includes("editstock") ? <Route path="/editstock/:id" element={<EditStock />} /> : ""}
-
 
             {permission.includes("viewblogs") ? <Route path="/blogs" element={<Blogs />} /> : ""}
             {permission.includes("addblogs") ? <Route path="/addblogs" element={<Addblogs />} /> : ""}

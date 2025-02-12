@@ -4,7 +4,7 @@ import { getblogslist, Addblogsbyadmin, Updateblogsbyadmin, changeblogsstatus, D
 import Table from '../../../Extracomponents/Table';
 import { SquarePen, Trash2, PanelBottomOpen, Eye } from 'lucide-react';
 import Swal from 'sweetalert2';
-import { image_baseurl } from '../../../../Utils/config';
+import { image_baseurl } from '../../../../Utils/config'; 
 import { Tooltip } from 'antd';
 import { fDateTime } from '../../../../Utils/Date_formate';
 import Loader from '../../../../Utils/Loader'
@@ -359,6 +359,7 @@ const Blogs = () => {
                                 onClick={() => {
                                     updateblogs(row)
                                 }}
+                                className='me-2'
                             />
                         </Tooltip>
                     </div> : ""}
@@ -416,7 +417,7 @@ const Blogs = () => {
 
                 <div className="card">
                     <div className="card-body">
-                        <div className="d-lg-flex align-items-center mb-4 gap-3">
+                        <div className="d-sm-flex align-items-center mb-4 gap-3">
                             <div className="position-relative">
                                 <input
                                     type="text"
@@ -432,7 +433,7 @@ const Blogs = () => {
                             {permission.includes("addblogs") ? <div className="ms-auto">
                                 <Link
                                     to="/employee/addblogs"
-                                    className="btn btn-primary"
+                                    className="btn btn-primary mt-2 mt-sm-0"
 
                                 >
                                     <i className="bx bxs-plus-square" />

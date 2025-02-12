@@ -275,7 +275,7 @@ const PaymentRequest = () => {
                 <hr />
 
                 <div className='card'>
-                    <div className='card-body'>
+                    <div className=''>
 
 
 
@@ -286,7 +286,7 @@ const PaymentRequest = () => {
 
                         <div className="tab-content" id="myTabContent3">
                             <div className="tab-pane fade show active" id="NavPills">
-                                <div className="card-body pt-0">
+                                <div className="card-body pt-0"> 
                                     <div className="d-lg-flex align-items-center mb-4 gap-3">
                                         {/* <div className="position-relative">
                                             <input
@@ -302,7 +302,7 @@ const PaymentRequest = () => {
 
                                     </div>
 
-                                    <ul className="nav nav-pills border-bottom nav-pills1 mb-4 light">
+                                    <ul className="nav nav-pills border-bottom nav-pills1 mb-4 light justify-content-center" id="pills-tab" role="tablist">
                                         <li className="nav-item">
                                             <a
                                                 className={`nav-link navlink ${activeTab === 'Pending' ? 'active' : ''}`}

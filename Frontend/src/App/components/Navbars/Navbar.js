@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Logo from "../Images/LOGO.png";
 import ProfileImage from "../Images/logo1.png";
-import { FaBell, FaBars } from "react-icons/fa";
+import { FaBell } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ReadNotificationStatus,
@@ -14,15 +14,16 @@ import {
 import Swal from "sweetalert2";
 import { formatDistanceToNow } from "date-fns";
 import { image_baseurl } from "../../../Utils/config";
-import ReusableModal from "../Models/ReusableModal";
-import { BrokerData } from "../../../Utils/BrokerForm";
 import BrokersData from "../../../Utils/BrokersData";
 import axios from "axios";
+import { GetUserData } from "../../Services/UserService/User";
+import { GetNotificationData } from "../../Services/UserService/User";
 
 const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
   useEffect(() => {
     getdemoclient();
     gettradedetail();
+    getuserdetail();
   }, []);
 
   const navigate = useNavigate();
@@ -34,13 +35,12 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
   const [clients, setClients] = useState([]);
   const [isDisabled, setIsDisabled] = useState(false);
   const [model, setModel] = useState(false);
-  const [isChecked, setIsChecked] = useState(true);
+  const [isChecked, setIsChecked] = useState(false);
   const [getstatus, setGetstatus] = useState([]);
   const [badgecount, setBadgecount] = useState([]);
   const [viewmodel, setViewModel] = useState(false);
-  const [showBrokerData, setShowBrokerData] = useState(false);
   const [UserDetail, setUserDetail] = useState([]);
-
+  const [userNotification, setUserNotification] = useState([]);
   const [statusinfo, setStatusinfo] = useState({
     aliceuserid: "",
     apikey: "",
@@ -51,10 +51,14 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
     localStorage.clear();
     if (Role === "USER") {
       window.location.href = "/#/user-login";
-    } else {
+    } else if (Role === "ADMIN" || Role === "SUPERADMIN" || Role === "EMPLOYEE") {
       window.location.href = "/#/login";
     }
   };
+
+
+
+
 
   const handleNotificationClick = async (event, notification) => {
     const user_active_status = "1";
@@ -95,15 +99,29 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
     }
   };
 
+
+
+
   const getdemoclient = async () => {
-    try {
-      const response = await getDashboardNotification(token);
-      if (response.status) {
-        setBadgecount(response?.unreadCount);
-        setClients(response?.data);
+    if (Role == "ADMIN") {
+      try {
+        const response = await getDashboardNotification(token);
+        if (response.status) {
+          setBadgecount(response?.unreadCount);
+          setClients(response?.data);
+        }
+      } catch (error) {
+        console.log("error", error);
       }
-    } catch (error) {
-      console.log("error", error);
+    } else if (Role == "USER") {
+      try {
+        const response = await GetNotificationData({ user_id: userid }, token);
+        if (response.status) {
+          setUserNotification(response.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
@@ -243,45 +261,41 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
   };
 
   useEffect(() => {
-    GetUserProfile();
     if (getstatus[0]?.brokerloginstatus === 1) {
       setIsChecked(true);
     }
-  }, [getstatus]);
+    if (UserDetail?.tradingstatus === 1) {
+      setIsChecked(true);
+    }
+  }, [getstatus, UserDetail]);
 
-  const GetUserProfile = async () => {
+  const getuserdetail = async () => {
     try {
-      let config = {
-        method: "get",
-        maxBodyLength: Infinity,
-        url:
-          "https://stockboxpnp.pnpuniverse.com/backend/api/client/detail/" +
-          userid,
-        headers: {},
-      };
-
-      axios
-        .request(config)
-        .then((response) => {
-          setUserDetail(response.data?.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      const response = await GetUserData(userid, token);
+      if (response.status) {
+        setUserDetail(response.data);
+      }
     } catch (error) {
-      console.error("Error while fetching user profile:", error);
+      console.log("error", error);
     }
   };
 
-  const TradingBtnCall = async () => {
+  const TradingBtnCall = async (e) => {
     if (UserDetail.dlinkstatus == 0) {
       setViewModel(true);
     } else {
-      console.log("UserDetail", UserDetail.brokerid);
+      if (UserDetail.brokerid == 1) {
+        window.location.href = `https://smartapi.angelone.in/publisher-login?api_key=${UserDetail.apikey}`;
+      } else if (UserDetail.brokerid == 2) {
+        window.location.href = `https://ant.aliceblueonline.com/?appcode=${UserDetail.apikey}`;
+      } else if (UserDetail.brokerid == 3) {
+      } else if (UserDetail.brokerid == 4) {
+      }
     }
   };
+
   const closeBrokerModal = () => {
-    setViewModel(false); // Close the modal
+    setViewModel(false);
   };
 
   return (
@@ -352,18 +366,18 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
             <div className="col-7 pe-0">
               <div className="d-flex align-items-center position-relative justify-content-end">
                 {Role === "ADMIN" ? (
-                  <div className="d-flex">
+                  <div className="d-flex me-1">
                     <span className="switch-label p-1">
-                      Trading Status:
-                      <span style={{ color: isChecked ? "green" : "red" }}>
+                      Login with API:
+                      {/* <span style={{ color: isChecked ? "green" : "red", fontSize: 16 }}>
                         {isChecked ? "On" : "Off"}
-                      </span>
+                      </span> */}
                     </span>
                     <div
                       className="form-check form-switch form-check-dark mb-0"
                       style={{ margin: "inherit", fontSize: 21 }}
                     >
-                      <span style={{ color: "red", fontSize: 16 }}>Off</span>
+                      {/* <span style={{ color: "red", fontSize: 16 }}>Off</span> */}
                       <input
                         className="form-check-input"
                         type="checkbox"
@@ -384,30 +398,26 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
                   </div>
                 ) : (
                   <div className="d-flex">
-                    <span className="switch-label p-1">
-                      Trading Status:
-                     
-                    </span>
+                    <span className="switch-label p-1">Login with API:</span>
                     <div
                       className="form-check form-switch form-check-dark mb-0"
                       style={{ margin: "inherit", fontSize: 21 }}
                     >
-                         <span style={{ color: isChecked ? "green" : "red" }}>
+                      {/* <span style={{ color: isChecked ? "green" : "red", fontSize: '16px' }}>
                         {isChecked ? "On" : "Off"}
-                      </span>
+                      </span> */}
                       <input
                         className="form-check-input"
                         type="checkbox"
                         role="switch"
                         id="flexSwitchCheckDark"
-                        disabled={isDisabled}
+                        disabled={isChecked}
                         checked={isChecked}
                         onClick={(e) => TradingBtnCall()}
                       />
                     </div>
                   </div>
                 )}
-              
 
                 {Role === "ADMIN" ? (
                   <div className="dropdown">
@@ -442,7 +452,7 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
                           {badgecount > 100 ? "99+" : badgecount}
                         </span>
                       ) : null}
-                      <FaBell size={24} />
+                      <FaBell size={20} className="" />
                     </div>
 
                     <div
@@ -508,11 +518,10 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
                           clients?.map((notification, index) => (
                             <div
                               key={index}
-                              className={`dropdown-item notification ${
-                                notification.status === 1
-                                  ? "text-info font-bold"
-                                  : "text-muted bg-light"
-                              }`}
+                              className={`dropdown-item notification ${notification.status === 1
+                                ? "text-info font-bold"
+                                : "text-muted bg-light"
+                                }`}
                               onClick={(event) =>
                                 handleNotificationClick(event, notification)
                               }
@@ -550,11 +559,11 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
                                     >
                                       {notification.createdAt
                                         ? formatDistanceToNow(
-                                            new Date(notification.createdAt),
-                                            {
-                                              addSuffix: true,
-                                            }
-                                          )
+                                          new Date(notification.createdAt),
+                                          {
+                                            addSuffix: true,
+                                          }
+                                        )
                                         : "Empty Message"}
                                     </span>
                                   </h6>
@@ -601,45 +610,198 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
                       </div>
                     </div>
                   </div>
-                ) : Role === "USER" ? (
-                  <div className="dropdown">
-                    <div
-                      className="notification-container dropdown-toggle"
-                      style={{
-                        cursor: "pointer",
-                        marginLeft: "10px",
-                        position: "relative",
-                      }}
-                      role="button"
-                      id="dropdownMenuLink"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      <FaBell size={24} />
-                    </div>
+                ) :
+                  Role === "USER" ? (
+                    <div className="dropdown">
+                      <div
+                        className="notification-container dropdown-toggle"
+                        style={{
+                          cursor: "pointer",
+                          marginLeft: "10px",
+                          position: "relative",
+                        }}
+                        role="button"
+                        id="dropdownMenuLink"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        {badgecount ? (
+                          <span
+                            className="alert-count"
+                            style={{
+                              position: "absolute",
+                              top: "-5px",
+                              right: "-5px",
+                              background: "red",
+                              color: "white",
+                              fontSize: "12px",
+                              fontWeight: "bold",
+                              borderRadius: "50%",
+                              padding: "4px 8px",
+                              zIndex: 1051,
+                            }}
+                          >
+                            {badgecount > 100 ? "99+" : badgecount}
+                          </span>
+                        ) : null}
+                        <FaBell size={20} />
+                      </div>
 
-                    <div
-                      style={notificationDropdownStyle}
-                      className="dropdown-menu"
-                      aria-labelledby="dropdownMenuLink"
-                    >
-                      <div style={notificationHeaderStyle}>Notifications</div>
-                      <ul style={notificationListStyle}>
-                        <li style={notificationItemStyle}>
-                          🔔 New message from admin
-                        </li>
-                        <li style={notificationItemStyle}>
-                          🔔 Your profile was updated
-                        </li>
-                        <li style={notificationItemStyle}>
-                          🔔 System maintenance scheduled
-                        </li>
-                      </ul>
+                      <div
+                        style={{
+                          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                          borderRadius: "10px",
+                          minWidth: "320px",
+                          maxWidth: "400px",
+                          zIndex: 1050,
+                          padding: "10px",
+                          overflow: "hidden",
+                        }}
+                        className="dropdown-menu dropdown-menu-end"
+                        aria-labelledby="dropdownMenuLink"
+                      >
+                        <div
+                          className="msg-header d-flex justify-content-between align-items-center"
+                          style={{
+                            borderBottom: "1px solid #ddd",
+                            paddingBottom: "8px",
+                            marginBottom: "10px",
+                          }}
+                        >
+                          <p
+                            className="msg-header-title"
+                            style={{
+                              fontSize: "18px",
+                              fontWeight: "600",
+                              margin: 0,
+                            }}
+                          >
+                            Notifications
+                          </p>
+                          <span
+                            className="msg-header-badge"
+                            style={{
+                              backgroundColor: "#007bff",
+                              color: "white",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                              borderRadius: "12px",
+                              padding: "2px 8px",
+                            }}
+                          >
+                            {
+                              userNotification?.filter(
+                                (notification) => notification?.status === 0
+                              )?.length
+                            }
+                          </span>
+                        </div>
+                        <div
+                          className="header-notifications-list"
+                          style={{
+                            overflowY: "auto",
+                            maxHeight: "300px",
+                            paddingRight: "10px",
+                            scrollbarWidth: "thin",
+                            scrollbarColor: "#c1c1c1 transparent",
+                          }}
+                        >
+                          {userNotification?.length > 0 ? (
+                            userNotification?.map((notification, index) => (
+                              <div
+                                key={index}
+                                className={`dropdown-item notification ${notification.status === 1
+                                  ? "text-info font-bold"
+                                  : "text-muted bg-light"
+                                  }`}
+                                style={{
+                                  padding: "10px",
+                                  marginBottom: "5px",
+                                  borderRadius: "6px",
+                                  background:
+                                    notification.status === 0
+                                      ? "#f8f9fa"
+                                      : "white",
+                                  cursor: "pointer",
+                                  transition: "all 0.3s ease",
+                                }}
+                              >
+                                <div className="d-flex align-items-center">
+                                  <div className="flex-grow-1">
+                                    <h6
+                                      className="msg-name"
+                                      style={{
+                                        margin: 0,
+                                        fontWeight:
+                                          notification.status === 1
+                                            ? "normal"
+                                            : "bold",
+                                      }}
+                                    >
+                                      {notification?.title}
+                                      <span
+                                        className="msg-time float-end"
+                                        style={{
+                                          fontSize: "12px",
+                                          color: "#6c757d",
+                                        }}
+                                      >
+                                        {notification.createdAt
+                                          ? formatDistanceToNow(
+                                            new Date(notification.createdAt),
+                                            {
+                                              addSuffix: true,
+                                            }
+                                          )
+                                          : "Empty Message"}
+                                      </span>
+                                    </h6>
+                                    <p
+                                      className="msg-info"
+                                      title={notification.message}
+                                      style={{
+                                        fontSize: "14px",
+                                        color: "#6c757d",
+                                        margin: "4px 0 0",
+                                      }}
+                                    >
+                                      {notification.message}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                height: "100%",
+                                color: "#6c757d",
+                              }}
+                            >
+                              <h4>No Notifications</h4>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-center msg-footer mt-2">
+                          <button
+                            className="btn btn-primary w-100"
+                            onClick={() => getAllMessageRead()}
+                            style={{
+                              borderRadius: "6px",
+                              fontWeight: "500",
+                            }}
+                          >
+                            View All Notifications
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  ""
-                )}
+                  ) : (
+                    ""
+                  )}
 
                 <div className="dropdown">
                   <div
@@ -702,7 +864,7 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
                 <div className="modal-content">
                   <div className="modal-header">
                     <h5 className="modal-title" id="exampleModalLabel">
-                      Trading Status
+                      Login with API
                     </h5>
                     <button
                       type="button"
@@ -772,7 +934,9 @@ const Navbar = ({ headerStatus, toggleHeaderStatus }) => {
           </>
         )}
 
-        {viewmodel && <BrokersData closeModal={closeBrokerModal} data={UserDetail} />}
+        {viewmodel && (
+          <BrokersData closeModal={closeBrokerModal} data={UserDetail} />
+        )}
       </nav>
     </>
   );

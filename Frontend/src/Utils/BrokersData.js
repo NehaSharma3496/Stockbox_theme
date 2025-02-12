@@ -14,7 +14,10 @@ function BrokersData({ data, closeModal }) {
   const [loading, setLoading] = useState(false);
   const [brokerId, setBrokerId] = useState(null);
 
+
+
   const brokerFieldsMap = {
+
     1: [{ key: "apikey", label: "API Key", type: "text" }],
     2: [
       { key: "AppCode", label: "App Code", type: "text" },
@@ -34,6 +37,7 @@ function BrokersData({ data, closeModal }) {
     ],
   };
 
+
   const fields = brokerFieldsMap[brokerId] || [];
 
   const handleFieldChange = (key, value) => {
@@ -42,6 +46,8 @@ function BrokersData({ data, closeModal }) {
       [key]: value,
     }));
   };
+
+
 
   const handleSave = async () => {
     setLoading(true);
@@ -73,6 +79,8 @@ function BrokersData({ data, closeModal }) {
       setLoading(false);
     }
   };
+
+  
 
   const brokers = [
     {
